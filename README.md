@@ -1,6 +1,6 @@
-# ElevenLabs API Project
+# ElevenLabs Voice Assistant
 
-This project demonstrates how to use the ElevenLabs text-to-speech API with Python.
+This project demonstrates how to use the ElevenLabs Conversation API to build a voice assistant with Python.
 
 ## Setup
 
@@ -9,46 +9,54 @@ This project demonstrates how to use the ElevenLabs text-to-speech API with Pyth
 pip install -r requirements.txt
 ```
 
-2. Your API key is already configured in `config.py`
+2. Set up your environment variables:
+   - Rename `env.example` to `.env`
+   - Add your ElevenLabs API key to the `.env` file
 
 ## Usage
 
-Run the demo script to test the API:
+Run the voice assistant:
 ```bash
-python elevenlabs_demo.py
+python voice_assistant.py
 ```
 
 This will:
-- Generate speech from text and save it as `output.mp3`
-- List available voices
+- Load your API credentials from environment variables
+- Connect to your ElevenLabs agent
+- Start a voice conversation session
+- Handle user interactions and responses
 
 ## Features
 
-- Text-to-speech generation
-- Voice selection
-- Audio file export
-- Error handling
+- Voice conversation with ElevenLabs AI agent
+- Customizable user schedule and prompts
+- Real-time audio interface
+- Response callbacks and transcript logging
+- Interruption handling
+
+## Configuration
+
+You can customize:
+- **User name**: What the assistant calls the user
+- **Schedule**: User's schedule for task management
+- **System prompt**: Context for the assistant
+- **First message**: Initial greeting
 
 ## API Key Security
 
-⚠️ **Important**: The API key is stored in `config.py` for demonstration purposes. In a production environment, you should:
-- Use environment variables
-- Never commit API keys to version control
-- Use a `.env` file (added to `.gitignore`)
+⚠️ **Important**: The API key is loaded from environment variables for security. Never commit API keys to version control.
 
-## Available Voices
+## Project Structure
 
-The demo will show you available voices. You can change the voice in the script by modifying the `voice` parameter in the `generate()` function.
-
-## Models
-
-- `eleven_monolingual_v1`: Best for English text
-- `eleven_multilingual_v1`: Supports multiple languages
+- `voice_assistant.py` - Main voice assistant implementation
+- `config.py` - Environment variable loading
+- `requirements.txt` - Python dependencies
+- `.env` - Environment variables (create from env.example)
 
 ## Next Steps
 
 You can extend this project by:
+- Adding more sophisticated conversation flows
+- Implementing voice cloning features
 - Creating a web interface
-- Building a voice cloning application
-- Implementing real-time speech synthesis
-- Adding voice customization features 
+- Adding multi-language support
