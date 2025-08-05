@@ -8,12 +8,13 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
         .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .pulse-animation {
             animation: pulse 2s infinite;
@@ -28,23 +29,23 @@
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-white mb-2">
-                <i class="fas fa-microphone-alt mr-3"></i>
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-microphone-alt mr-3 text-blue-600"></i>
                 ElevenLabs Voice Assistant
             </h1>
-            <p class="text-white/80 text-lg">AI-powered voice assistant with natural speech synthesis</p>
+            <p class="text-gray-600 text-lg">AI-powered voice assistant with natural speech synthesis</p>
         </div>
 
         <!-- Status Card -->
         <div class="glass-effect rounded-lg p-6 mb-8">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-white font-semibold text-lg">System Status</h3>
-                    <p class="text-white/70" id="status-text">Checking connection...</p>
+                    <h3 class="text-gray-800 font-semibold text-lg">System Status</h3>
+                    <p class="text-gray-600" id="status-text">Checking connection...</p>
                 </div>
                 <div class="flex items-center space-x-2">
                     <div id="status-indicator" class="w-3 h-3 bg-yellow-400 rounded-full pulse-animation"></div>
-                    <span class="text-white/70 text-sm" id="status-label">Connecting...</span>
+                    <span class="text-gray-600 text-sm" id="status-label">Connecting...</span>
                 </div>
             </div>
         </div>
@@ -53,30 +54,30 @@
         <div class="grid md:grid-cols-2 gap-8">
             <!-- Voice Generation Panel -->
             <div class="glass-effect rounded-lg p-6">
-                <h2 class="text-white font-semibold text-xl mb-4">
-                    <i class="fas fa-volume-up mr-2"></i>
+                <h2 class="text-gray-800 font-semibold text-xl mb-4">
+                    <i class="fas fa-volume-up mr-2 text-blue-600"></i>
                     Voice Generation
                 </h2>
                 
                 <!-- Voice Selection -->
                 <div class="mb-4">
-                    <label class="block text-white/80 text-sm font-medium mb-2">Select Voice</label>
-                    <select id="voice-select" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Select Voice</label>
+                    <select id="voice-select" class="w-full p-3 rounded-lg bg-white border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Loading voices...</option>
                     </select>
                 </div>
 
                 <!-- Text Input -->
                 <div class="mb-4">
-                    <label class="block text-white/80 text-sm font-medium mb-2">Message</label>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Message</label>
                     <textarea id="message-input" rows="4" 
-                              class="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50"
+                              class="w-full p-3 rounded-lg bg-white border border-gray-300 text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                               placeholder="Enter your message here...">{{ first_message }}</textarea>
                 </div>
 
                 <!-- Generate Button -->
                 <button id="generate-btn" 
-                        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
                     <i class="fas fa-play mr-2"></i>
                     Generate Speech
                 </button>
@@ -91,25 +92,25 @@
 
             <!-- User Info Panel -->
             <div class="glass-effect rounded-lg p-6">
-                <h2 class="text-white font-semibold text-xl mb-4">
-                    <i class="fas fa-user mr-2"></i>
+                <h2 class="text-gray-800 font-semibold text-xl mb-4">
+                    <i class="fas fa-user mr-2 text-blue-600"></i>
                     User Information
                 </h2>
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-white/80 text-sm font-medium mb-1">Name</label>
-                        <p class="text-white font-semibold">{{ user_name }}</p>
+                        <label class="block text-gray-700 text-sm font-medium mb-1">Name</label>
+                        <p class="text-gray-800 font-semibold">{{ user_name }}</p>
                     </div>
                     
                     <div>
-                        <label class="block text-white/80 text-sm font-medium mb-1">Schedule</label>
-                        <p class="text-white">{{ schedule }}</p>
+                        <label class="block text-gray-700 text-sm font-medium mb-1">Schedule</label>
+                        <p class="text-gray-800">{{ schedule }}</p>
                     </div>
                     
                     <div>
-                        <label class="block text-white/80 text-sm font-medium mb-1">Assistant Prompt</label>
-                        <p class="text-white text-sm">{{ prompt }}</p>
+                        <label class="block text-gray-700 text-sm font-medium mb-1">Assistant Prompt</label>
+                        <p class="text-gray-800 text-sm">{{ prompt }}</p>
                     </div>
                 </div>
             </div>
@@ -117,12 +118,12 @@
 
         <!-- Recent Activity -->
         <div class="glass-effect rounded-lg p-6 mt-8">
-            <h2 class="text-white font-semibold text-xl mb-4">
-                <i class="fas fa-history mr-2"></i>
+            <h2 class="text-gray-800 font-semibold text-xl mb-4">
+                <i class="fas fa-history mr-2 text-blue-600"></i>
                 Recent Activity
             </h2>
             <div id="activity-log" class="space-y-2">
-                <p class="text-white/70 text-sm">No activity yet...</p>
+                <p class="text-gray-600 text-sm">No activity yet...</p>
             </div>
         </div>
     </div>
@@ -268,10 +269,10 @@
             const timestamp = new Date().toLocaleTimeString();
             
             const activityItem = document.createElement('div');
-            activityItem.className = 'flex items-center justify-between text-white/80 text-sm';
+            activityItem.className = 'flex items-center justify-between text-gray-700 text-sm';
             activityItem.innerHTML = `
                 <span>${message}</span>
-                <span class="text-white/50">${timestamp}</span>
+                <span class="text-gray-500">${timestamp}</span>
             `;
             
             // Remove "No activity yet..." message if it exists
