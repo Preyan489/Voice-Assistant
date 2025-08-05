@@ -1,9 +1,6 @@
 import os
 from dotenv import load_dotenv
-from elevenlabs.client import ElevenLabs
-from elevenlabs.conversational_ai.conversation import Conversation
-from elevenlabs.conversational_ai.default_audio_interface import DefaultAudioInterface
-from elevenlabs.types import ConversationConfig
+from elevenlabs import generate, save, set_api_key, voices
 
 # Load environment variables
 load_dotenv()
@@ -26,86 +23,54 @@ schedule = "Sales Meeting with Taipy at 10:00; Gym with Sophie at 17:00"
 prompt = f"You are a helpful assistant. Your interlocutor has the following schedule: {schedule}. Help them manage their time and tasks effectively."
 first_message = f"Hello {user_name}, how can I help you today?"
 
-def setup_conversation():
+def test_elevenlabs_connection():
     """
-    Set up the ElevenLabs client and configure a conversation instance.
-    We will then configure the conversation with the agent's first message and system prompt.
+    Test the ElevenLabs API connection and basic functionality
     """
-    # Initialize the ElevenLabs client
-    client = ElevenLabs(api_key=API_KEY)
-    
-    # Underneath in the same file, we are then going to set this configuration to our ElevenLabs agent:
-    conversation_override = {
-        "agent": {
-            "prompt": {"prompt": prompt,},
-            "first_message": first_message
-        }
-    }
-    
-    config = ConversationConfig(
-        conversation_config_override=conversation_override,
-        extra_body={},
-        dynamic_variables={}
-    )
-    
-    # Create the conversation instance
-    conversation = Conversation(
-        client=client,
-        AGENT_ID="agent_7501k1v287vsetq9b32khpph8er3",
-        config=config,
-        requires_auth=True,
-        audio_interface=DefaultAudioInterface()
-    )
-    
-    return conversation
-
-# 3. Implement Callbacks for Responses
-# We'll also need to handle assistant responses by printing the assistant's responses and user transcripts, 
-# as well as handling the situation where the user interrupts the assistant. 
-# We can do so by implementing a few callback functions underneath our configuration.
-
-def print_agent_response(response):
-    print(f"Agent: {response}")
-
-def print_interrupted_response(original, corrected):
-    print(f"Agent interrupted, truncated response: {corrected}")
-
-def print_user_transcript(transcript):
-    print(f"User: {transcript}")
+    try:
+        # Set API key
+        set_api_key(API_KEY)
+        print("✅ API key set successfully")
+        
+        # Get available voices first
+        print("📋 Getting available voices...")
+        available_voices = voices()
+        
+        if not available_voices:
+            print("❌ No voices available")
+            return
+        
+        # Use the first available voice
+        first_voice = available_voices[0]
+        print(f"🎤 Using voice: {first_voice.name}")
+        
+        # Test voice generation
+        print("🎤 Testing voice generation...")
+        audio = generate(
+            text=first_message,
+            voice=first_voice.name,
+            model="eleven_monolingual_v1"
+        )
+        
+        # Save the audio file
+        save(audio, "test_output.mp3")
+        print("✅ Audio generated and saved as 'test_output.mp3'")
+        
+        # List available voices
+        print("\n📋 Available voices:")
+        for voice in available_voices[:5]:
+            print(f"  - {voice.name} ({voice.category})")
+        
+        if len(available_voices) > 5:
+            print(f"  ... and {len(available_voices) - 5} more voices")
+        
+        print(f"\n🎉 ElevenLabs API is working! Your assistant will say: '{first_message}'")
+        print(f"📅 Schedule: {schedule}")
+        
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        print("Please check your API key and internet connection.")
 
 if __name__ == "__main__":
-    print("Setting up ElevenLabs Conversation API...")
-    
-    # Initialize the ElevenLabs client
-    client = ElevenLabs(api_key=API_KEY)
-    
-    # Underneath in the same file, we are then going to set this configuration to our ElevenLabs agent:
-    conversation_override = {
-        "agent": {
-            "prompt": {"prompt": prompt,},
-            "first_message": first_message
-        }
-    }
-    
-    config = ConversationConfig(
-        conversation_config_override=conversation_override,
-        extra_body={},
-        dynamic_variables={}
-    )
-    
-    # 4. Start the Voice Assistant Session
-    # Finally, initiate the conversation session in the same file:
-    conversation = Conversation(
-        client,
-        "agent_7501k1v287vsetq9b32khpph8er3",
-        config=config,
-        requires_auth=True,
-        audio_interface=DefaultAudioInterface(),
-        callback_agent_response=print_agent_response,
-        callback_agent_response_correction=print_interrupted_response,
-        callback_user_transcript=print_user_transcript,
-    )
-
-    print("✅ Conversation setup complete!")
-    print("🎤 Starting voice assistant session...")
-    conversation.start_session() 
+    print("Setting up ElevenLabs API...")
+    test_elevenlabs_connection() 
