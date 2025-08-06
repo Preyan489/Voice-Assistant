@@ -6,6 +6,20 @@ import tempfile
 import uuid
 import json
 
+# Import our advanced NLU engine
+try:
+    from advanced_nlu_engine import AdvancedVoiceAssistantNLU
+    nlu_available = True
+except ImportError as e:
+    print(f"⚠️ Advanced NLU not available: {e}")
+    # Fallback to basic NLU
+    try:
+        from nlu_engine import VoiceAssistantNLU
+        nlu_available = True
+    except ImportError as e:
+        print(f"⚠️ Basic NLU not available: {e}")
+        nlu_available = False
+
 # Load environment variables
 load_dotenv()
 
@@ -19,6 +33,27 @@ API_KEY = os.getenv("ELEVENLABS_API_KEY")
 if API_KEY:
     set_api_key(API_KEY)
 
+# Initialize NLU engine
+if nlu_available:
+    try:
+        # Try advanced NLU first
+        try:
+            nlu_engine = AdvancedVoiceAssistantNLU()
+            print("✅ Advanced NLU engine initialized successfully")
+            nlu_type = "advanced_ml"
+        except:
+            # Fallback to basic NLU
+            nlu_engine = VoiceAssistantNLU()
+            print("✅ Basic NLU engine initialized successfully")
+            nlu_type = "basic"
+    except Exception as e:
+        print(f"❌ Error initializing NLU engine: {e}")
+        nlu_engine = None
+        nlu_type = "none"
+else:
+    nlu_engine = None
+    nlu_type = "none"
+
 # Configuration - now more dynamic
 user_name = "Alex"
 schedule = "Sales Meeting with Taipy at 10:00; Gym with Sophie at 17:00"
@@ -30,7 +65,9 @@ def index():
     return render_template('index.html', 
                          user_name=user_name, 
                          schedule=schedule,
-                         base_prompt=base_prompt)
+                         base_prompt=base_prompt,
+                         nlu_available=nlu_available,
+                         nlu_type=nlu_type)
 
 @app.route('/api/voices')
 def get_voices():
@@ -44,7 +81,7 @@ def get_voices():
 
 @app.route('/api/generate', methods=['POST'])
 def generate_speech():
-    """Generate speech from user input with dynamic response"""
+    """Generate speech from user input with dynamic response using advanced NLU"""
     try:
         data = request.get_json()
         user_input = data.get('text', '').strip()
@@ -53,8 +90,21 @@ def generate_speech():
         if not user_input:
             return jsonify({"success": False, "error": "Please provide some text to generate speech"})
         
-        # Generate dynamic response based on user input
-        assistant_response = generate_assistant_response(user_input)
+        # Use NLU engine to understand user intent and generate response
+        if nlu_engine:
+            # Parse intent using advanced NLU
+            intent_data = nlu_engine.parse_intent(user_input)
+            response_data = nlu_engine.get_response(intent_data, user_name)
+            assistant_response = response_data['response']
+            intent = response_data['intent']
+            confidence = response_data['confidence']
+            method = intent_data.get('method', 'unknown')
+        else:
+            # Fallback to simple response generation
+            assistant_response = generate_assistant_response(user_input)
+            intent = "fallback"
+            confidence = 0.5
+            method = "fallback"
         
         # Generate audio for the assistant's response
         audio = generate(
@@ -74,6 +124,10 @@ def generate_speech():
             "filename": filename,
             "user_input": user_input,
             "assistant_response": assistant_response,
+            "intent": intent,
+            "confidence": confidence,
+            "method": method,
+            "nlu_type": nlu_type,
             "message": f"Generated response: {assistant_response[:100]}..."
         })
         
@@ -82,8 +136,7 @@ def generate_speech():
 
 def generate_assistant_response(user_input):
     """
-    Generate a contextual response based on user input
-    This simulates an AI assistant that understands context and responds appropriately
+    Fallback response generation when NLU is not available
     """
     user_input_lower = user_input.lower()
     
@@ -146,14 +199,17 @@ def status():
             "voices_count": len(available_voices),
             "user_name": user_name,
             "schedule": schedule,
-            "assistant_type": "dynamic_conversational"
+            "assistant_type": "advanced_conversational",
+            "nlu_available": nlu_available,
+            "nlu_type": nlu_type,
+            "nlu_engine": nlu_type
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
 @app.route('/api/conversation', methods=['POST'])
 def conversation():
-    """Handle conversational interactions"""
+    """Handle conversational interactions with advanced NLU"""
     try:
         data = request.get_json()
         user_message = data.get('message', '').strip()
@@ -162,22 +218,96 @@ def conversation():
         if not user_message:
             return jsonify({"success": False, "error": "Please provide a message"})
         
-        # Generate contextual response
-        assistant_response = generate_assistant_response(user_message)
+        # Use NLU engine to understand and respond
+        if nlu_engine:
+            intent_data = nlu_engine.parse_intent(user_message)
+            response_data = nlu_engine.get_response(intent_data, user_name)
+            assistant_response = response_data['response']
+            intent = response_data['intent']
+            confidence = response_data['confidence']
+            method = intent_data.get('method', 'unknown')
+        else:
+            assistant_response = generate_assistant_response(user_message)
+            intent = "fallback"
+            confidence = 0.5
+            method = "fallback"
         
         # Add to conversation history
         conversation_history.append({
             "user": user_message,
             "assistant": assistant_response,
+            "intent": intent,
+            "confidence": confidence,
+            "method": method,
             "timestamp": "now"
         })
         
         return jsonify({
             "success": True,
             "assistant_response": assistant_response,
+            "intent": intent,
+            "confidence": confidence,
+            "method": method,
             "conversation_history": conversation_history
         })
         
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/nlu/parse', methods=['POST'])
+def parse_intent():
+    """Parse user input using advanced NLU engine"""
+    try:
+        data = request.get_json()
+        user_input = data.get('text', '').strip()
+        
+        if not user_input:
+            return jsonify({"success": False, "error": "Please provide text to parse"})
+        
+        if nlu_engine:
+            intent_data = nlu_engine.parse_intent(user_input)
+            response_data = nlu_engine.get_response(intent_data, user_name)
+            
+            return jsonify({
+                "success": True,
+                "intent": intent_data['intent'],
+                "confidence": intent_data['confidence'],
+                "method": intent_data.get('method', 'unknown'),
+                "slots": intent_data.get('slots', []),
+                "response": response_data['response']
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "NLU engine not available"
+            })
+            
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/nlu/train', methods=['POST'])
+def train_nlu():
+    """Train the NLU model on new examples"""
+    try:
+        data = request.get_json()
+        user_input = data.get('text', '').strip()
+        expected_intent = data.get('intent', '').strip()
+        
+        if not user_input or not expected_intent:
+            return jsonify({"success": False, "error": "Please provide both text and expected intent"})
+        
+        if nlu_engine and hasattr(nlu_engine, 'train_on_example'):
+            success = nlu_engine.train_on_example(user_input, expected_intent)
+            return jsonify({
+                "success": success,
+                "message": f"Trained on: '{user_input}' -> {expected_intent}" if success else "Training failed"
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "Training not supported by current NLU engine"
+            })
+            
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 

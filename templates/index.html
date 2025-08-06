@@ -209,7 +209,8 @@
                     data.voices.forEach(voice => {
                         const option = document.createElement('option');
                         option.value = voice.name;
-                        option.textContent = `${voice.name} (${voice.category})`;
+                        // Remove the category text (like "premade") from display
+                        option.textContent = voice.name;
                         voiceSelect.appendChild(option);
                     });
                 } else {
