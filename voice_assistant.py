@@ -8,20 +8,27 @@ load_dotenv()
 # Get API key from environment
 API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
-# We are going to inform the assistant that the user has a schedule and prompt it to help the user.
-# In this part you can customize:
-# - The user's name: what the assistant will call the user.
-# - The schedule: the user's schedule that the assistant will use to provide help.
-# - The prompt: the message that the assistant will receive when the conversation starts to understand the context of the conversation.
-# - The first message: the first message the assistant will say to the user.
-
-# Prompts are used to provide context to the assistant and help it understand the user's needs.
-
-# Here's my example:
+# Enhanced ChatGPT-like configuration
 user_name = "Alex"
 schedule = "Sales Meeting with Taipy at 10:00; Gym with Sophie at 17:00"
-prompt = f"You are a helpful assistant. Your interlocutor has the following schedule: {schedule}. Help them manage their time and tasks effectively."
-first_message = f"Hello {user_name}, how can I help you today?"
+
+# Enhanced prompt for ChatGPT-like behavior
+prompt = f"""You are a helpful AI assistant similar to ChatGPT. Your user {user_name} has the following schedule: {schedule}. 
+
+You can:
+- Help manage schedules and tasks
+- Answer general questions thoughtfully
+- Provide intelligent and helpful responses
+- Engage in natural conversation
+- Help with organization and productivity
+- Respond to any type of user input appropriately
+- Remember context from previous interactions
+- Provide relevant suggestions and follow-ups
+
+Be conversational, friendly, helpful, and intelligent. Understand context and provide relevant, useful responses. You're designed to be like ChatGPT - understanding, helpful, and engaging."""
+
+# Enhanced first message
+first_message = f"Hello {user_name}! I'm your AI assistant, designed to help you stay organized and productive. I can help with your schedule, answer questions, or just chat with you. How can I help you today?"
 
 def test_elevenlabs_connection():
     """
@@ -44,7 +51,7 @@ def test_elevenlabs_connection():
         first_voice = available_voices[0]
         print(f"🎤 Using voice: {first_voice.name}")
         
-        # Test voice generation
+        # Test voice generation with enhanced message
         print("🎤 Testing voice generation...")
         audio = generate(
             text=first_message,
@@ -64,13 +71,15 @@ def test_elevenlabs_connection():
         if len(available_voices) > 5:
             print(f"  ... and {len(available_voices) - 5} more voices")
         
-        print(f"\n🎉 ElevenLabs API is working! Your assistant will say: '{first_message}'")
+        print(f"\n🎉 ElevenLabs API is working! Your ChatGPT-like assistant will say: '{first_message}'")
         print(f"📅 Schedule: {schedule}")
+        print(f"🤖 Assistant Type: Advanced ChatGPT-like AI")
+        print(f"💬 Capabilities: Natural conversation, schedule management, task organization, general assistance")
         
     except Exception as e:
         print(f"❌ Error: {e}")
         print("Please check your API key and internet connection.")
 
 if __name__ == "__main__":
-    print("Setting up ElevenLabs API...")
+    print("Setting up ChatGPT-like ElevenLabs Voice Assistant...")
     test_elevenlabs_connection() 

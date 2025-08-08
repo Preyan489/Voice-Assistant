@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ElevenLabs Voice Assistant</title>
+    <title>ChatGPT-like Voice Assistant</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -37,6 +37,27 @@
             color: #374151;
             border: 1px solid #e5e7eb;
         }
+        .suggestion-chip {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border: 1px solid #d1d5db;
+            transition: all 0.2s ease;
+        }
+        .suggestion-chip:hover {
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            transform: translateY(-1px);
+        }
+        .typing-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f4f6;
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
@@ -44,10 +65,10 @@
         <!-- Header -->
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-gray-800 mb-2">
-                <i class="fas fa-microphone-alt mr-3 text-blue-600"></i>
-                ElevenLabs Voice Assistant
+                <i class="fas fa-robot mr-3 text-blue-600"></i>
+                ChatGPT-like Voice Assistant
             </h1>
-            <p class="text-gray-600 text-lg">AI-powered conversational voice assistant</p>
+            <p class="text-gray-600 text-lg">Advanced AI-powered conversational assistant with natural language understanding</p>
         </div>
 
         <!-- Status Card -->
@@ -76,7 +97,15 @@
                 <!-- Conversation History -->
                 <div id="conversation-history" class="h-64 overflow-y-auto mb-4 p-4 bg-gray-50 rounded-lg">
                     <div class="text-center text-gray-500 text-sm">
-                        Start a conversation with your AI assistant...
+                        Start a conversation with your ChatGPT-like AI assistant...
+                    </div>
+                </div>
+
+                <!-- Conversation Suggestions -->
+                <div id="suggestions-container" class="mb-4 hidden">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Suggested Questions</label>
+                    <div id="suggestions" class="flex flex-wrap gap-2">
+                        <!-- Suggestions will be populated here -->
                     </div>
                 </div>
 
@@ -93,15 +122,41 @@
                     <label class="block text-gray-700 text-sm font-medium mb-2">Your Message</label>
                     <textarea id="message-input" rows="3" 
                               class="w-full p-3 rounded-lg bg-white border border-gray-300 text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              placeholder="Type your message here... (e.g., 'What's on my schedule today?', 'Hello!', 'Help me with tasks')"></textarea>
+                              placeholder="Type your message here... (e.g., 'What's on my schedule today?', 'Tell me a joke', 'How can you help me?')"></textarea>
                 </div>
 
                 <!-- Send Button -->
                 <button id="send-btn" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
-                    <i class="fas fa-paper-plane mr-2"></i>
-                    Send Message
+                        class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Send Message</span>
                 </button>
+
+                <!-- NLU Information Display -->
+                <div id="nlu-info" class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200 hidden">
+                    <h4 class="text-blue-800 font-semibold text-sm mb-2">
+                        <i class="fas fa-brain mr-1"></i>
+                        AI Understanding
+                    </h4>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <span class="text-blue-600 font-medium">Intent:</span>
+                            <span id="intent-display" class="text-blue-800"></span>
+                        </div>
+                        <div>
+                            <span class="text-blue-600 font-medium">Confidence:</span>
+                            <span id="confidence-display" class="text-blue-800"></span>
+                        </div>
+                        <div>
+                            <span class="text-blue-600 font-medium">Method:</span>
+                            <span id="method-display" class="text-blue-800"></span>
+                        </div>
+                        <div>
+                            <span class="text-blue-600 font-medium">NLU Type:</span>
+                            <span id="nlu-type-display" class="text-blue-800"></span>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Audio Player -->
                 <div id="audio-player" class="mt-4 hidden">
@@ -131,17 +186,20 @@
                     
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">Assistant Type</label>
-                        <p class="text-gray-800 text-sm">Dynamic Conversational AI</p>
+                        <p class="text-gray-800 text-sm">Advanced ChatGPT-like AI</p>
                     </div>
 
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">Capabilities</label>
                         <ul class="text-gray-800 text-sm space-y-1">
+                            <li>• Natural conversation</li>
                             <li>• Schedule management</li>
                             <li>• Task assistance</li>
-                            <li>• Conversational chat</li>
-                            <li>• Voice generation</li>
                             <li>• Context-aware responses</li>
+                            <li>• Voice generation</li>
+                            <li>• Intelligent Q&A</li>
+                            <li>• Jokes and entertainment</li>
+                            <li>• Productivity help</li>
                         </ul>
                     </div>
                 </div>
@@ -167,32 +225,47 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            checkStatus();
+            updateStatus();
             loadVoices();
             setupEventListeners();
         });
 
-        // Check API status
-        async function checkStatus() {
+        // Update status
+        async function updateStatus() {
             try {
                 const response = await fetch('/api/status');
                 const data = await response.json();
                 
-                const statusIndicator = document.getElementById('status-indicator');
-                const statusLabel = document.getElementById('status-label');
-                const statusText = document.getElementById('status-text');
-                
                 if (data.success) {
+                    const statusText = document.getElementById('status-text');
+                    const statusIndicator = document.getElementById('status-indicator');
+                    const statusLabel = document.getElementById('status-label');
+                    
+                    statusText.innerHTML = `
+                        <strong>Connected</strong><br>
+                        <span class="text-sm">API Key: ${data.api_key === 'configured' ? '✅ Configured' : '❌ Missing'}</span><br>
+                        <span class="text-sm">Voices: ${data.voices_count} available</span><br>
+                        <span class="text-sm">NLU Engine: ${data.nlu_type || 'None'}</span><br>
+                        <span class="text-sm">User: ${data.user_name}</span><br>
+                        <span class="text-sm">Type: ChatGPT-like Assistant</span>
+                    `;
+                    
                     statusIndicator.className = 'w-3 h-3 bg-green-400 rounded-full';
                     statusLabel.textContent = 'Connected';
-                    statusText.textContent = `API Key: ${data.api_key} | Voices: ${data.voices_count} | User: ${data.user_name} | Type: ${data.assistant_type}`;
+                    statusLabel.className = 'text-green-600 text-sm font-medium';
                 } else {
-                    statusIndicator.className = 'w-3 h-3 bg-red-400 rounded-full';
-                    statusLabel.textContent = 'Error';
-                    statusText.textContent = `Error: ${data.error}`;
+                    throw new Error(data.error || 'Unknown error');
                 }
             } catch (error) {
                 console.error('Status check failed:', error);
+                const statusText = document.getElementById('status-text');
+                const statusIndicator = document.getElementById('status-indicator');
+                const statusLabel = document.getElementById('status-label');
+                
+                statusText.innerHTML = '<strong>Connection Failed</strong><br><span class="text-sm text-red-600">Check your API key and connection</span>';
+                statusIndicator.className = 'w-3 h-3 bg-red-400 rounded-full';
+                statusLabel.textContent = 'Failed';
+                statusLabel.className = 'text-red-600 text-sm font-medium';
             }
         }
 
@@ -209,7 +282,6 @@
                     data.voices.forEach(voice => {
                         const option = document.createElement('option');
                         option.value = voice.name;
-                        // Remove the category text (like "premade") from display
                         option.textContent = voice.name;
                         voiceSelect.appendChild(option);
                     });
@@ -267,28 +339,45 @@
                 // Add user message to conversation
                 addMessageToConversation(userMessage, 'user');
 
-                // Generate response
-                const response = await fetch('/api/generate', {
+                // Show typing indicator
+                showTypingIndicator();
+
+                // Generate response using conversation endpoint for better context
+                const response = await fetch('/api/conversation', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        text: userMessage,
-                        voice: voice
+                        message: userMessage,
+                        history: conversationHistory
                     })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
+                    // Hide typing indicator
+                    hideTypingIndicator();
+
                     // Add assistant response to conversation
                     addMessageToConversation(data.assistant_response, 'assistant');
 
-                    // Play the generated audio
-                    audioElement.src = `/api/audio/${data.filename}`;
-                    audioPlayer.classList.remove('hidden');
-                    audioElement.play();
+                    // Update conversation history
+                    conversationHistory = data.conversation_history || [];
+
+                    // Display suggestions if available
+                    if (data.suggestions && data.suggestions.length > 0) {
+                        displaySuggestions(data.suggestions);
+                    } else {
+                        hideSuggestions();
+                    }
+
+                    // Display NLU information
+                    displayNLUInfo(data);
+
+                    // Generate and play audio
+                    await generateAndPlayAudio(userMessage, voice, data.assistant_response);
 
                     // Add to activity log
                     addActivityLog(`Conversation: "${userMessage}" → "${data.assistant_response.substring(0, 50)}..."`);
@@ -296,9 +385,11 @@
                     // Clear input
                     messageInput.value = '';
                 } else {
+                    hideTypingIndicator();
                     alert(`Error: ${data.error}`);
                 }
             } catch (error) {
+                hideTypingIndicator();
                 console.error('Message failed:', error);
                 alert('Failed to send message. Please try again.');
             } finally {
@@ -306,6 +397,85 @@
                 sendBtn.disabled = false;
                 sendBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Send Message';
             }
+        }
+
+        // Generate and play audio
+        async function generateAndPlayAudio(userMessage, voice, assistantResponse) {
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: assistantResponse,
+                        voice: voice
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const audioPlayer = document.getElementById('audio-player');
+                    const audioElement = document.getElementById('audio-element');
+                    
+                    audioElement.src = `/api/audio/${data.filename}`;
+                    audioPlayer.classList.remove('hidden');
+                    audioElement.play();
+                }
+            } catch (error) {
+                console.error('Audio generation failed:', error);
+            }
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const conversationHistory = document.getElementById('conversation-history');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'mb-3 text-left';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'conversation-bubble rounded-lg p-3 inline-block assistant-bubble';
+            bubble.innerHTML = '<div class="typing-indicator"></div>';
+            
+            typingDiv.appendChild(bubble);
+            conversationHistory.appendChild(typingDiv);
+            conversationHistory.scrollTop = conversationHistory.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Display suggestions
+        function displaySuggestions(suggestions) {
+            const suggestionsContainer = document.getElementById('suggestions-container');
+            const suggestionsDiv = document.getElementById('suggestions');
+            
+            suggestionsDiv.innerHTML = '';
+            suggestions.forEach(suggestion => {
+                const chip = document.createElement('button');
+                chip.className = 'suggestion-chip px-3 py-1 rounded-full text-sm text-gray-700 hover:shadow-md';
+                chip.textContent = suggestion;
+                chip.onclick = () => {
+                    document.getElementById('message-input').value = suggestion;
+                    sendMessage();
+                };
+                suggestionsDiv.appendChild(chip);
+            });
+            
+            suggestionsContainer.classList.remove('hidden');
+        }
+
+        // Hide suggestions
+        function hideSuggestions() {
+            const suggestionsContainer = document.getElementById('suggestions-container');
+            suggestionsContainer.classList.add('hidden');
         }
 
         // Add message to conversation
@@ -357,6 +527,25 @@
             const activities = activityLog.children;
             if (activities.length > 10) {
                 activityLog.removeChild(activities[activities.length - 1]);
+            }
+        }
+
+        // Display NLU information
+        function displayNLUInfo(data) {
+            const nluInfoDiv = document.getElementById('nlu-info');
+            const intentDisplay = document.getElementById('intent-display');
+            const confidenceDisplay = document.getElementById('confidence-display');
+            const methodDisplay = document.getElementById('method-display');
+            const nluTypeDisplay = document.getElementById('nlu-type-display');
+
+            if (data.nlu_info) {
+                intentDisplay.textContent = data.nlu_info.intent || 'N/A';
+                confidenceDisplay.textContent = data.nlu_info.confidence || 'N/A';
+                methodDisplay.textContent = data.nlu_info.method || 'N/A';
+                nluTypeDisplay.textContent = data.nlu_info.nlu_type || 'N/A';
+                nluInfoDiv.classList.remove('hidden');
+            } else {
+                nluInfoDiv.classList.add('hidden');
             }
         }
     </script>
