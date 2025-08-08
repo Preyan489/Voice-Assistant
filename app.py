@@ -7,12 +7,14 @@ import uuid
 import json
 from datetime import datetime
 
-# Import our advanced NLU engine
+# Import LLM conversation handler
 try:
-    from advanced_nlu_engine import AdvancedVoiceAssistantNLU
-    nlu_available = True
+    from llm_conversation import LLMConversationHandler
+    llm_available = True
 except ImportError as e:
-    print(f"⚠️ Advanced NLU not available: {e}")
+    print(f"⚠️ LLM conversation handler not available: {e}")
+    llm_available = False
+    
     # Fallback to basic NLU
     try:
         from nlu_engine import VoiceAssistantNLU
@@ -34,26 +36,37 @@ API_KEY = os.getenv("ELEVENLABS_API_KEY")
 if API_KEY:
     set_api_key(API_KEY)
 
-# Initialize NLU engine
-if nlu_available:
+# Initialize conversation handler
+if llm_available:
     try:
-        # Try advanced NLU first
-        try:
-            nlu_engine = AdvancedVoiceAssistantNLU()
-            print("✅ Advanced ChatGPT-like NLU engine initialized successfully")
-            nlu_type = "advanced_ml"
-        except:
-            # Fallback to basic NLU
-            nlu_engine = VoiceAssistantNLU()
-            print("✅ Basic NLU engine initialized successfully")
-            nlu_type = "basic"
+        conversation_handler = LLMConversationHandler()
+        print("✅ LLM conversation handler initialized successfully")
+        conversation_type = "llm"
     except Exception as e:
-        print(f"❌ Error initializing NLU engine: {e}")
-        nlu_engine = None
-        nlu_type = "none"
+        print(f"❌ Error initializing LLM conversation handler: {e}")
+        conversation_handler = None
+        conversation_type = "none"
+        
+        # Try fallback to basic NLU
+        if nlu_available:
+            try:
+                conversation_handler = VoiceAssistantNLU()
+                print("✅ Basic NLU engine initialized as fallback")
+                conversation_type = "basic"
+            except Exception as e:
+                print(f"❌ Error initializing fallback NLU: {e}")
 else:
-    nlu_engine = None
-    nlu_type = "none"
+    conversation_handler = None
+    conversation_type = "none"
+    
+    # Try fallback to basic NLU
+    if nlu_available:
+        try:
+            conversation_handler = VoiceAssistantNLU()
+            print("✅ Basic NLU engine initialized as fallback")
+            conversation_type = "basic"
+        except Exception as e:
+            print(f"❌ Error initializing fallback NLU: {e}")
 
 # Configuration - now more dynamic and ChatGPT-like
 user_name = "Alex"
@@ -77,8 +90,8 @@ def index():
                          user_name=user_name, 
                          schedule=schedule,
                          base_prompt=base_prompt,
-                         nlu_available=nlu_available,
-                         nlu_type=nlu_type)
+                         conversation_available=conversation_handler is not None,
+                         conversation_type=conversation_type)
 
 @app.route('/api/voices')
 def get_voices():
@@ -250,7 +263,7 @@ def status():
 
 @app.route('/api/conversation', methods=['POST'])
 def conversation():
-    """Handle conversational interactions with advanced ChatGPT-like NLU"""
+    """Handle conversational interactions with LLM or fallback NLU"""
     try:
         data = request.get_json()
         user_message = data.get('message', '').strip()
@@ -259,29 +272,42 @@ def conversation():
         if not user_message:
             return jsonify({"success": False, "error": "Please provide a message"})
         
-        # Use NLU engine to understand and respond
-        if nlu_engine:
-            # Parse intent using advanced NLU
-            intent_data = nlu_engine.parse_intent(user_message)
-            response_data = nlu_engine.get_response(intent_data, user_name)
-            assistant_response = response_data['response']
-            intent = response_data['intent']
-            confidence = response_data['confidence']
-            method = intent_data.get('method', 'unknown')
+        # Use conversation handler to get response
+        if conversation_handler:
+            if conversation_type == "llm":
+                # Use LLM for conversation
+                response_data = conversation_handler.get_response(user_message)
+                assistant_response = response_data['response']
+                intent = response_data['intent']
+                confidence = response_data['confidence']
+                method = "llm"
+                suggestions = response_data.get('suggestions', [])
+                conversation_history = response_data.get('conversation_history', [])
+            else:
+                # Use basic NLU
+                intent_data = conversation_handler.parse_intent(user_message)
+                response_data = conversation_handler.get_response(intent_data, user_name)
+                assistant_response = response_data['response']
+                intent = response_data['intent']
+                confidence = response_data['confidence']
+                method = "nlu"
+                suggestions = get_conversation_suggestions(intent, user_message)
             
-            # Add contextual information if available
+            # Add contextual information
             contextual_info = {
                 'conversation_length': len(conversation_history) + 1,
                 'recent_topics': [msg.get('intent', 'general_chat') for msg in conversation_history[-3:]] if conversation_history else [],
-                'user_engagement': 'high' if len(conversation_history) > 2 else 'medium'
+                'user_engagement': 'high' if len(conversation_history) > 2 else 'medium',
+                'conversation_type': conversation_type
             }
         else:
-            # Fallback to enhanced response generation
+            # Fallback to basic response generation
             assistant_response = generate_assistant_response(user_message)
             intent = "fallback"
             confidence = 0.5
             method = "fallback"
             contextual_info = {}
+            suggestions = get_conversation_suggestions("general_chat", user_message)
         
         # Add to conversation history
         conversation_history.append({

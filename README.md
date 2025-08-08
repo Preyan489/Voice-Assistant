@@ -1,23 +1,23 @@
-# ChatGPT-like Voice Assistant
+# AI Voice Assistant with LLM Integration
 
-An advanced AI-powered voice assistant with ChatGPT-like conversational capabilities, built using ElevenLabs API and enhanced natural language understanding.
+An advanced AI-powered voice assistant that uses OpenAI's GPT model for natural conversations and ElevenLabs for high-quality voice synthesis.
 
 ## 🚀 Features
 
-### ChatGPT-like Capabilities
-- **Natural Conversation**: Understands and responds to any type of user input naturally
-- **Context-Aware Responses**: Remembers conversation history and provides contextual responses
-- **Intelligent Q&A**: Answers general questions with thoughtful, helpful responses
-- **Task Management**: Helps with schedules, reminders, and productivity
-- **Entertainment**: Tells jokes and engages in friendly conversation
-- **Conversational Suggestions**: Provides relevant follow-up questions and suggestions
+### LLM-Powered Conversations
+- **GPT Integration**: Uses OpenAI's GPT model for natural language understanding
+- **Context-Aware**: Maintains conversation history for coherent dialogue
+- **Intelligent Responses**: Thoughtful and relevant answers to any query
+- **Task Management**: Smart scheduling and reminder assistance
+- **Entertainment**: Engaging conversation, jokes, and casual chat
+- **Dynamic Suggestions**: Context-based follow-up suggestions
 
 ### Technical Features
-- **Advanced NLU Engine**: Machine learning and rule-based intent recognition
-- **Voice Generation**: High-quality voice synthesis with ElevenLabs
-- **Web Interface**: Modern, responsive UI with real-time conversation
-- **Context Management**: Maintains conversation history and user preferences
-- **Multi-Modal Interaction**: Text and voice input/output support
+- **LLM Integration**: OpenAI GPT for advanced conversation capabilities
+- **Voice Synthesis**: High-quality voice generation with ElevenLabs
+- **Web Interface**: Modern, responsive UI with real-time interaction
+- **Fallback System**: Graceful degradation to basic NLU if needed
+- **Multi-Modal**: Seamless text and voice interaction
 
 ## 🛠️ Setup
 
@@ -28,9 +28,13 @@ pip install -r requirements.txt
 
 2. **Configure environment**:
    - Copy `env.example` to `.env`
-   - Add your ElevenLabs API key to the `.env` file:
+   - Add your API keys to the `.env` file:
    ```
-   ELEVENLABS_API_KEY=your_api_key_here
+   # ElevenLabs API key for voice synthesis
+   ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
+
+   # OpenAI API key for LLM conversations
+   OPENAI_API_KEY=your_openai_api_key_here
    ```
 
 3. **Run the application**:
