@@ -105,7 +105,7 @@ def get_voices():
 
 @app.route('/api/generate', methods=['POST'])
 def generate_speech():
-    """Generate speech from user input with dynamic response using advanced NLU"""
+    """Generate speech from user input with dynamic response using conversation handler"""
     try:
         data = request.get_json()
         user_input = data.get('text', '').strip()
@@ -114,15 +114,23 @@ def generate_speech():
         if not user_input:
             return jsonify({"success": False, "error": "Please provide some text to generate speech"})
         
-        # Use NLU engine to understand user intent and generate response
-        if nlu_engine:
-            # Parse intent using advanced NLU
-            intent_data = nlu_engine.parse_intent(user_input)
-            response_data = nlu_engine.get_response(intent_data, user_name)
-            assistant_response = response_data['response']
-            intent = response_data['intent']
-            confidence = response_data['confidence']
-            method = intent_data.get('method', 'unknown')
+        # Use conversation handler to understand user intent and generate response
+        if conversation_handler:
+            if conversation_type == "llm":
+                # Use LLM for conversation
+                response_data = conversation_handler.get_response(user_input)
+                assistant_response = response_data['response']
+                intent = response_data['intent']
+                confidence = response_data['confidence']
+                method = "llm"
+            else:
+                # Use basic NLU
+                intent_data = conversation_handler.parse_intent(user_input)
+                response_data = conversation_handler.get_response(intent_data, user_name)
+                assistant_response = response_data['response']
+                intent = response_data['intent']
+                confidence = response_data['confidence']
+                method = "nlu"
         else:
             # Fallback to simple response generation
             assistant_response = generate_assistant_response(user_input)
@@ -151,12 +159,12 @@ def generate_speech():
             "intent": intent,
             "confidence": confidence,
             "method": method,
-            "nlu_type": nlu_type,
-            "nlu_info": {
+            "conversation_type": conversation_type,
+            "conversation_info": {
                 "intent": intent,
                 "confidence": round(confidence, 2),
                 "method": method,
-                "nlu_type": nlu_type
+                "conversation_type": conversation_type
             },
             "message": f"Generated response: {assistant_response[:100]}..."
         })
@@ -254,9 +262,9 @@ def status():
             "user_name": user_name,
             "schedule": schedule,
             "assistant_type": "advanced_conversational",
-            "nlu_available": nlu_available,
-            "nlu_type": nlu_type,
-            "nlu_engine": nlu_type
+            "conversation_available": conversation_handler is not None,
+            "conversation_type": conversation_type,
+            "llm_available": llm_available
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
@@ -326,11 +334,11 @@ def conversation():
             "intent": intent,
             "confidence": confidence,
             "method": method,
-            "nlu_info": {
+            "conversation_info": {
                 "intent": intent,
                 "confidence": round(confidence, 2),
                 "method": method,
-                "nlu_type": nlu_type,
+                "conversation_type": conversation_type,
                 "contextual_info": contextual_info
             },
             "conversation_history": conversation_history,
@@ -384,7 +392,7 @@ def get_conversation_suggestions(intent, user_message):
 
 @app.route('/api/nlu/parse', methods=['POST'])
 def parse_intent():
-    """Parse user input using advanced NLU engine"""
+    """Parse user input using conversation handler"""
     try:
         data = request.get_json()
         user_input = data.get('text', '').strip()
@@ -392,22 +400,35 @@ def parse_intent():
         if not user_input:
             return jsonify({"success": False, "error": "Please provide text to parse"})
         
-        if nlu_engine:
-            intent_data = nlu_engine.parse_intent(user_input)
-            response_data = nlu_engine.get_response(intent_data, user_name)
+        if conversation_handler:
+            if conversation_type == "llm":
+                # Use LLM for parsing
+                response_data = conversation_handler.get_response(user_input)
+                intent = response_data['intent']
+                confidence = response_data['confidence']
+                method = "llm"
+                response = response_data['response']
+            else:
+                # Use basic NLU
+                intent_data = conversation_handler.parse_intent(user_input)
+                response_data = conversation_handler.get_response(intent_data, user_name)
+                intent = response_data['intent']
+                confidence = response_data['confidence']
+                method = "nlu"
+                response = response_data['response']
             
             return jsonify({
                 "success": True,
-                "intent": intent_data['intent'],
-                "confidence": intent_data['confidence'],
-                "method": intent_data.get('method', 'unknown'),
-                "slots": intent_data.get('slots', []),
-                "response": response_data['response']
+                "intent": intent,
+                "confidence": confidence,
+                "method": method,
+                "slots": [],
+                "response": response
             })
         else:
             return jsonify({
                 "success": False,
-                "error": "NLU engine not available"
+                "error": "Conversation handler not available"
             })
             
     except Exception as e:
@@ -424,8 +445,8 @@ def train_nlu():
         if not user_input or not expected_intent:
             return jsonify({"success": False, "error": "Please provide both text and expected intent"})
         
-        if nlu_engine and hasattr(nlu_engine, 'train_on_example'):
-            success = nlu_engine.train_on_example(user_input, expected_intent)
+        if conversation_handler and hasattr(conversation_handler, 'train_on_example'):
+            success = conversation_handler.train_on_example(user_input, expected_intent)
             return jsonify({
                 "success": success,
                 "message": f"Trained on: '{user_input}' -> {expected_intent}" if success else "Training failed"
@@ -433,7 +454,7 @@ def train_nlu():
         else:
             return jsonify({
                 "success": False,
-                "error": "Training not supported by current NLU engine"
+                "error": "Training not supported by current conversation handler"
             })
             
     except Exception as e:
