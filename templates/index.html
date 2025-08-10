@@ -245,6 +245,151 @@
             from { transform: translateX(-20px); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+        
+        .floating-action {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 40;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: none;
+        }
+        
+        .floating-action:hover {
+            transform: scale(1.1);
+        }
+        
+        .mobile-menu-toggle {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .conversation-bubble {
+                max-width: 90%;
+            }
+            
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .floating-action {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+        
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        .dark .loading-shimmer {
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .voice-preview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .voice-preview.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .quick-action-btn {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .quick-action-btn:hover {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .quick-action-btn {
+            background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+            border-color: #64748b;
+            color: #f1f5f9;
+        }
+        
+        .dark .quick-action-btn:hover {
+            background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .dark .stat-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(148, 163, 184, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+        
+        .dark .stat-number {
+            color: #818cf8;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        .dark .stat-label {
+            color: #94a3b8;
+        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen transition-colors duration-300" id="body">
@@ -253,6 +398,20 @@
         <button id="theme-toggle" class="glass-effect dark:dark-glass-effect p-3 rounded-full text-gray-700 dark:text-gray-300 hover:scale-110 transition-transform duration-200">
             <i class="fas fa-sun text-yellow-500" id="sun-icon"></i>
             <i class="fas fa-moon text-blue-400 hidden" id="moon-icon"></i>
+        </button>
+    </div>
+    
+    <!-- Mobile Menu Toggle -->
+    <div class="fixed top-4 left-4 z-50 md:hidden">
+        <button id="mobile-menu-toggle" class="glass-effect dark:dark-glass-effect p-3 rounded-full text-gray-700 dark:text-gray-300 hover:scale-110 transition-transform duration-200">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    
+    <!-- Floating Action Button -->
+    <div class="floating-action">
+        <button id="scroll-to-top" class="glass-effect dark:dark-glass-effect p-4 rounded-full text-gray-700 dark:text-gray-300 hover:scale-110 transition-transform duration-200 shadow-lg">
+            <i class="fas fa-arrow-up text-xl"></i>
         </button>
     </div>
 
@@ -272,7 +431,7 @@
 
         <!-- Status Card -->
         <div class="glass-effect dark:dark-glass-effect rounded-2xl p-6 mb-8 card-hover fade-in" style="animation-delay: 0.1s;">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between mb-6">
                 <div>
                     <h3 class="text-gray-800 dark:text-gray-200 font-semibold text-xl mb-2">
                         <i class="fas fa-server mr-3 text-blue-600 dark:text-blue-400"></i>
@@ -285,6 +444,26 @@
                 <div class="flex items-center space-x-3">
                     <div id="status-indicator" class="status-indicator bg-yellow-400 pulse-animation"></div>
                     <span class="text-gray-600 dark:text-gray-400 font-medium" id="status-label">Connecting...</span>
+                </div>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-conversations">0</div>
+                    <div class="stat-label">Conversations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-messages">0</div>
+                    <div class="stat-label">Messages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-audio">0</div>
+                    <div class="stat-label">Audio Generated</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="uptime">0s</div>
+                    <div class="stat-label">Uptime</div>
                 </div>
             </div>
         </div>
@@ -305,12 +484,37 @@
                         </div>
                     </div>
                     
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="sendQuickMessage('What\'s on my schedule today?')">
+                            <i class="fas fa-calendar mr-2"></i>
+                            Schedule
+                        </button>
+                        <button class="quick-action-btn" onclick="sendQuickMessage('Tell me a joke')">
+                            <i class="fas fa-laugh mr-2"></i>
+                            Joke
+                        </button>
+                        <button class="quick-action-btn" onclick="sendQuickMessage('How can you help me?')">
+                            <i class="fas fa-question mr-2"></i>
+                            Help
+                        </button>
+                        <button class="quick-action-btn" onclick="sendQuickMessage('What\'s the weather like?')">
+                            <i class="fas fa-cloud mr-2"></i>
+                            Weather
+                        </button>
+                    </div>
+
                     <!-- Conversation History -->
                     <div id="conversation-history" class="h-80 overflow-y-auto mb-6 p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl scrollbar-custom">
                         <div class="text-center text-gray-500 dark:text-gray-400 py-8">
                             <i class="fas fa-comment-dots text-4xl mb-4 text-gray-300 dark:text-gray-600"></i>
                             <p class="text-lg font-medium">Start a conversation</p>
                             <p class="text-sm">Ask me anything or let's chat about your day!</p>
+                            <div class="mt-4 flex justify-center space-x-2">
+                                <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                                <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+                                <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -331,6 +535,10 @@
                         <select id="voice-select" class="input-field w-full p-4 text-gray-800 dark:text-gray-200 focus:outline-none">
                             <option value="">Loading voices...</option>
                         </select>
+                        <div id="voice-preview" class="voice-preview">
+                            <i class="fas fa-volume-up mr-2"></i>
+                            <span id="voice-preview-text">Voice preview</span>
+                        </div>
                     </div>
 
                     <!-- User Input -->
@@ -467,6 +675,12 @@
         let currentAudio = null;
         let conversationHistory = [];
         let isDarkMode = false;
+        let startTime = Date.now();
+        let stats = {
+            conversations: 0,
+            messages: 0,
+            audioGenerated: 0
+        };
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
@@ -474,6 +688,7 @@
             updateStatus();
             loadVoices();
             setupEventListeners();
+            startStatsTimer();
         });
 
         // Theme management
@@ -587,6 +802,9 @@
             const sendBtn = document.getElementById('send-btn');
             const messageInput = document.getElementById('message-input');
             const themeToggle = document.getElementById('theme-toggle');
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const scrollToTopBtn = document.getElementById('scroll-to-top');
+            const voiceSelect = document.getElementById('voice-select');
 
             sendBtn.addEventListener('click', sendMessage);
             
@@ -606,6 +824,74 @@
                     enableDarkMode();
                 }
             });
+
+            // Mobile menu toggle
+            mobileMenuToggle.addEventListener('click', function() {
+                toggleMobileMenu();
+            });
+
+            // Scroll to top
+            scrollToTopBtn.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Voice selection change
+            voiceSelect.addEventListener('change', function() {
+                showVoicePreview(this.value);
+            });
+
+            // Show/hide scroll to top button based on scroll position
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    scrollToTopBtn.style.display = 'block';
+                } else {
+                    scrollToTopBtn.style.display = 'none';
+                }
+            });
+        }
+
+        // Quick message function
+        function sendQuickMessage(message) {
+            document.getElementById('message-input').value = message;
+            sendMessage();
+        }
+
+        // Show voice preview
+        function showVoicePreview(voiceName) {
+            const voicePreview = document.getElementById('voice-preview');
+            const voicePreviewText = document.getElementById('voice-preview-text');
+            
+            if (voiceName) {
+                voicePreviewText.textContent = `Selected: ${voiceName}`;
+                voicePreview.classList.add('show');
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    voicePreview.classList.remove('show');
+                }, 3000);
+            } else {
+                voicePreview.classList.remove('show');
+            }
+        }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const container = document.querySelector('.container');
+            container.classList.toggle('mobile-menu-open');
+        }
+
+        // Start stats timer
+        function startStatsTimer() {
+            setInterval(updateStats, 1000);
+        }
+
+        // Update stats
+        function updateStats() {
+            const uptime = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('uptime').textContent = uptime + 's';
+            document.getElementById('total-conversations').textContent = stats.conversations;
+            document.getElementById('total-messages').textContent = stats.messages;
+            document.getElementById('total-audio').textContent = stats.audioGenerated;
         }
 
         // Send message and get response
@@ -677,6 +963,12 @@
                     // Generate and play audio
                     await generateAndPlayAudio(userMessage, voice, data.assistant_response);
 
+                    // Update stats
+                    stats.messages += 2; // User message + assistant response
+                    if (conversationHistory.length === 0) {
+                        stats.conversations += 1;
+                    }
+
                     // Add to activity log
                     addActivityLog(`Conversation: "${userMessage}" → "${data.assistant_response.substring(0, 50)}..."`);
 
@@ -722,6 +1014,9 @@
                     audioElement.src = `/api/audio/${data.filename}`;
                     audioPlayer.classList.remove('hidden');
                     audioElement.play();
+                    
+                    // Update audio stats
+                    stats.audioGenerated += 1;
                 }
             } catch (error) {
                 console.error('Audio generation failed:', error);
